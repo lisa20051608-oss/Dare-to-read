@@ -1,0 +1,1138 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dare to Read – Hành trình 21 ngày đọc sách</title>
+  <style>
+    :root{
+      /* VietinBank brand-ish gradient (blue → cyan → red) */
+      --vtb-blue:#003A8C;
+      --vtb-cyan:#00AEEF;
+      --vtb-red:#E60012;
+
+      --ink:#0b1220;
+      --card: rgba(255,255,255,.90);
+      --card2: rgba(255,255,255,.72);
+      --muted: rgba(11,18,32,.55);
+      --shadow: 0 18px 50px rgba(0,0,0,.18);
+      --radius: 18px;
+
+      --dark: rgba(11,18,32,.92);
+    }
+
+    html,body{
+      height:100%; margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:#0b1220;
+    }
+
+    #wrap{
+      height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:14px;
+      box-sizing:border-box;
+    }
+
+    #stage{
+      width:min(1100px, 96vw);
+      aspect-ratio: 16 / 9;
+
+      /* Static background (no animation) */
+      background:
+        radial-gradient(900px 520px at 20% 20%, rgba(255,255,255,.14), transparent 60%),
+        radial-gradient(780px 520px at 85% 25%, rgba(255,255,255,.10), transparent 55%),
+        linear-gradient(135deg, var(--vtb-blue), var(--vtb-cyan), var(--vtb-red));
+
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Overlay UI */
+    #ui{
+      position:absolute; inset:0;
+      pointer-events:none;
+    }
+
+    .panel{
+      position:absolute;
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: 0 10px 30px rgba(0,0,0,.12);
+      padding: 16px 16px 14px;
+      color: var(--ink);
+      pointer-events:auto;
+      backdrop-filter: blur(10px);
+    }
+    .panel.hairline{outline:1px solid rgba(255,255,255,.35);}
+
+    .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+    .col{display:flex; flex-direction:column; gap:8px;}
+    .title{font-weight:800; letter-spacing:.2px;}
+    .subtitle{color:var(--muted); font-size:12px; line-height:1.3;}
+
+    .kpi{display:flex; gap:10px; flex-wrap:wrap;}
+    .pill{
+      background: rgba(255,255,255,.75);
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+      color: rgba(11,18,32,.85);
+      border:1px solid rgba(11,18,32,.08);
+    }
+
+    input, textarea, select{
+      width:100%;
+      border-radius: 12px;
+      border:1px solid rgba(11,18,32,.14);
+      padding: 10px 12px;
+      font-size: 14px;
+      outline:none;
+      box-sizing:border-box;
+      background: rgba(255,255,255,.92);
+      color: var(--ink);
+    }
+    textarea{min-height: 118px; resize: vertical;}
+    .hint{font-size:12px; color: rgba(11,18,32,.65);}
+
+    .btn{
+      border: 0;
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-weight: 800;
+      cursor:pointer;
+      box-shadow: 0 10px 18px rgba(0,0,0,.12);
+      transition: transform .07s ease, filter .15s ease, box-shadow .15s ease;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .btn:active{transform: translateY(1px) scale(.99);}
+    .btn.dark{background: var(--dark); color:white;}
+    .btn.soft{background: rgba(255,255,255,.78); color: var(--ink); border:1px solid rgba(11,18,32,.10); box-shadow:none;}
+    .btn.warn{background: linear-gradient(135deg, #fb7185, #f97316); color:white;}
+    .btn.small{padding:8px 10px; border-radius: 12px; font-size: 12px; box-shadow:none;}
+    .btn.link{background: transparent; box-shadow:none; border:1px dashed rgba(11,18,32,.18); color: rgba(11,18,32,.85);}
+
+    .seg{
+      display:flex; gap:8px;
+      background: rgba(255,255,255,.65);
+      border:1px solid rgba(11,18,32,.10);
+      padding:6px;
+      border-radius: 999px;
+    }
+    .seg button{
+      border:0; cursor:pointer;
+      padding: 9px 12px;
+      border-radius: 999px;
+      font-weight: 900;
+      background: transparent;
+      color: rgba(11,18,32,.72);
+    }
+    .seg button.active{
+      background: var(--dark);
+      color: white;
+    }
+
+    .divider{height:1px; background: rgba(11,18,32,.10); margin:10px 0;}
+
+    .badge{
+      display:inline-flex; align-items:center; gap:6px;
+      padding: 6px 9px;
+      border-radius: 999px;
+      border:1px solid rgba(11,18,32,.10);
+      background: rgba(255,255,255,.75);
+      font-size:12px;
+      font-weight:900;
+    }
+
+    .toast{
+      position:absolute; left:50%; bottom:14px; transform:translateX(-50%);
+      background: rgba(11,18,32,.90);
+      color:white;
+      padding: 10px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      box-shadow: 0 12px 24px rgba(0,0,0,.18);
+      opacity:0;
+      pointer-events:none;
+      transition: opacity .25s ease, transform .25s ease;
+      max-width:min(860px, 90%);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .toast.show{opacity:1; transform:translateX(-50%) translateY(-4px);}
+
+    .corner{
+      position:absolute; top:12px; right:12px;
+      display:flex; gap:8px;
+      pointer-events:auto;
+    }
+
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;}
+
+    /* Day buttons */
+    .daybtn{
+      width:100%;
+      padding: 10px 8px;
+      border-radius: 16px;
+      border:1px solid rgba(11,18,32,.10);
+      box-shadow:none;
+      position:relative;
+      overflow:hidden;
+    }
+
+    /* Active pulse (CSS only) */
+    @keyframes glow {
+      0% { box-shadow: 0 0 0 rgba(255,255,255,0), 0 0 0 rgba(0,0,0,0); transform: translateY(0); }
+      50% { box-shadow: 0 0 0 4px rgba(255,255,255,.25), 0 10px 18px rgba(0,0,0,.12); transform: translateY(-1px); }
+      100% { box-shadow: 0 0 0 rgba(255,255,255,0), 0 0 0 rgba(0,0,0,0); transform: translateY(0); }
+    }
+    .daybtn.activePulse{ animation: glow 1.25s ease-in-out infinite; }
+
+    /* Header (static) */
+    .brandHeader{
+      position:absolute; left:18px; top:14px;
+      pointer-events:none;
+      display:flex; align-items:center; gap:10px;
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.14);
+      outline: 1px solid rgba(255,255,255,.20);
+      color: rgba(255,255,255,.95);
+      backdrop-filter: blur(8px);
+    }
+    .brandHeader .h1{font-weight:900; letter-spacing:.2px;}
+    .brandHeader .h2{font-size:12px; opacity:.92;}
+    .quoteCard{
+      text-align:left;
+      background: rgba(255,255,255,.78);
+      border:1px solid rgba(11,18,32,.10);
+      border-radius: 16px;
+      padding: 12px 12px 10px;
+    }
+    .quoteText{font-size:14px; font-weight:800; color: rgba(11,18,32,.92); line-height:1.35;}
+    .quoteAuthor{margin-top:6px; font-size:12px; color: rgba(11,18,32,.62); font-weight:800;}
+  </style>
+</head>
+
+<body>
+<div id="wrap">
+  <div id="stage">
+    <div class="brandHeader">
+      <div>
+        <div class="h1">📚 Dare to Read</div>
+        <div class="h2">Hành trình 21 ngày đọc sách</div>
+      </div>
+    </div>
+
+    <div id="ui"></div>
+    <div id="toast" class="toast"></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  // ---------- CONFIG ----------
+  const CONFIG = {
+    GAME_NAME: "Dare to Read – Hành trình 21 ngày đọc sách",
+    DAYS: 21,
+    ROW_DAYS: 7,
+    DEFAULT_PASS: "1234",
+    ADMIN_PASS: "Ab123456",
+    STORAGE_KEY: "dare_to_read_v3",
+
+    // Web App URL (vẫn giữ để ghi sheet, nhưng UI không hiển thị trạng thái sheet)
+    WEBHOOK_URL: "https://script.google.com/macros/s/AKfycbyqik0-6CFcH2_EFkvcXt_z4ChSaW5T3LWl9KVZyA4TrWBc4G59ptF6YHur-pgi8Gli/exec",
+
+    MAX_SHARE_CHARS: 700,
+
+    QUOTES: [
+      { text: "Một căn phòng không có sách giống như một thân thể không có linh hồn.", author: "Cicero" },
+      { text: "Đọc sách là cách rẻ nhất để du lịch — và cũng là cách sâu nhất để trưởng thành.", author: "Khuyết danh" },
+      { text: "Sách là tấm gương: bạn chỉ nhìn thấy trong đó điều bạn đã mang sẵn bên mình.", author: "Carlos Ruiz Zafón" },
+      { text: "Hôm nay một người đọc, ngày mai một người lãnh đạo.", author: "Margaret Fuller" },
+      { text: "Sách cho bạn đôi cánh để bay khỏi giới hạn của chính mình.", author: "Khuyết danh" },
+      { text: "Đọc sách không làm bạn giàu ngay, nhưng làm bạn giàu nội lực.", author: "Khuyết danh" },
+      { text: "Tri thức bắt đầu từ sự tò mò; đọc sách nuôi dưỡng sự tò mò ấy mỗi ngày.", author: "Khuyết danh" },
+      { text: "Bạn không cần đọc thật nhiều—chỉ cần đọc đúng và làm đến nơi.", author: "Khuyết danh" }
+    ],
+  };
+
+  // ---------- DOM ----------
+  const ui = document.getElementById("ui");
+  const toastEl = document.getElementById("toast");
+
+  // ---------- DATA MODEL ----------
+  function now(){ return Date.now(); }
+
+  function loadState() {
+    const raw = localStorage.getItem(CONFIG.STORAGE_KEY);
+    if (!raw) return null;
+    try { return JSON.parse(raw); } catch { return null; }
+  }
+  function saveState() {
+    localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(state));
+  }
+
+  function makeFreshProgress(createdAtTs=now()){
+    return { points: 0, reachedAt: { "0": createdAtTs }, days: {} };
+  }
+
+  function seedState() {
+    return {
+      settings: {
+        webhookUrl: CONFIG.WEBHOOK_URL,
+        lastExportAt: 0,
+      },
+      users: {
+        "demo01": { pass: CONFIG.DEFAULT_PASS, avatar: "M", createdAt: now()-1000*60*60*24*3 },
+        "demo02": { pass: CONFIG.DEFAULT_PASS, avatar: "F", createdAt: now()-1000*60*60*24*2 },
+      },
+      progress: {
+        "demo01": makeFreshProgress(now()-1000*60*60*24*3),
+        "demo02": makeFreshProgress(now()-1000*60*60*24*2),
+      },
+      session: { currentUser: null, isAdmin: false },
+      // vẫn giữ sync backend để ghi sheet nếu cần, nhưng không hiển thị UI
+      sync: { status: {} },
+      lastQuote: null
+    };
+  }
+
+  let state = loadState() || seedState();
+  saveState();
+
+  function ensureUser(user) {
+    if (!state.users[user]) state.users[user] = { pass: CONFIG.DEFAULT_PASS, avatar: "M", createdAt: now() };
+    if (!state.progress[user]) state.progress[user] = makeFreshProgress(state.users[user].createdAt || now());
+  }
+
+  function normalizeUserAd(input) {
+    let u = (input || "").trim();
+    u = u.replace(/\s+/g, "");
+    u = u.replace(/@vietinbank\.vn$/i, "");
+    return u;
+  }
+
+  // ---------- SYNC (HIDDEN UI) ----------
+  function getWebhookUrl(){
+    return (state.settings.webhookUrl || CONFIG.WEBHOOK_URL || "").trim();
+  }
+
+  async function sendToWebhook(payload) {
+    const url = getWebhookUrl();
+    if (!url || !url.startsWith("https://")) return { ok:false, reason:"NO_URL" };
+    try {
+      await fetch(url, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload)
+      });
+      return { ok:true, uncertain:true };
+    } catch (e) {
+      return { ok:false, reason:String(e) };
+    }
+  }
+
+  function setSyncStatus(user, day, ok) {
+    const key = `${user}:${day}`;
+    state.sync.status[key] = { ok: !!ok, at: now() };
+    saveState();
+  }
+
+  // ---------- APP STATE ----------
+  const View = { LOGIN:"LOGIN", HOME:"HOME", DAY:"DAY", DONE:"DONE", ADMIN_LOGIN:"ADMIN_LOGIN", ADMIN:"ADMIN" };
+  let view = View.LOGIN;
+  let selectedAvatar = "M";
+  let currentDay = 1;
+  let lastDoneInfo = null;
+  let adminTab = "ACCOUNTS"; // ACCOUNTS | WEBHOOK | DASH | RESET
+
+  // ---------- UI HELPERS ----------
+  function clearUI(){ ui.innerHTML = ""; }
+  function el(tag, attrs={}, children=[]) {
+    const e = document.createElement(tag);
+    for (const [k,v] of Object.entries(attrs)) {
+      if (k === "class") e.className = v;
+      else if (k === "html") e.innerHTML = v;
+      else if (k.startsWith("on") && typeof v === "function") e.addEventListener(k.slice(2), v);
+      else e.setAttribute(k, v);
+    }
+    for (const c of children) e.appendChild(c);
+    return e;
+  }
+  function showToast(msg, ms=2400) {
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(()=>toastEl.classList.remove("show"), ms);
+  }
+
+  function isLoggedIn(){ return !!state.session.currentUser && !!state.users[state.session.currentUser]; }
+  function currentUser(){ return state.session.currentUser; }
+
+  function computeLeaderboard() {
+    const rows = Object.keys(state.users).map(u => {
+      const p = state.progress[u] || makeFreshProgress(state.users[u]?.createdAt || now());
+      const pts = p.points || 0;
+      const reached = (p.reachedAt && p.reachedAt[String(pts)]) ? p.reachedAt[String(pts)] : (state.users[u]?.createdAt || now());
+      return { user: u, points: pts, reachedAt: reached };
+    });
+    rows.sort((a,b)=>{
+      if (b.points !== a.points) return b.points - a.points;
+      if (a.reachedAt !== b.reachedAt) return a.reachedAt - b.reachedAt;
+      return a.user.localeCompare(b.user);
+    });
+    return rows;
+  }
+  function userRank(user) {
+    const lb = computeLeaderboard();
+    const idx = lb.findIndex(r => r.user === user);
+    return idx >= 0 ? (idx+1) : lb.length;
+  }
+  function getNextPlayableDay(user) {
+    const prog = state.progress[user];
+    if (!prog) return 1;
+    for (let d=1; d<=CONFIG.DAYS; d++) if (!prog.days[d]) return d;
+    return CONFIG.DAYS;
+  }
+  function dayStatus(user, d) {
+    const prog = state.progress[user];
+    const next = getNextPlayableDay(user);
+    if (prog?.days?.[d]) return "DONE";
+    if (d === next) return "ACTIVE";
+    if (d > next) return "LOCKED";
+    return "DONE";
+  }
+
+  function pickQuote(){
+    const q = CONFIG.QUOTES[Math.floor(Math.random()*CONFIG.QUOTES.length)];
+    return q || { text:"Đọc mỗi ngày một chút, bạn sẽ đi rất xa.", author:"Khuyết danh" };
+  }
+
+  // ---------- VIEWS ----------
+  function buildLogin() {
+    clearUI();
+
+    const panel = el("div", { class:"panel hairline", style:"left:50%; top:50%; transform:translate(-50%,-50%); width:min(520px, 92%);" });
+
+    const title = el("div", { class:"title", style:"font-size:18px; margin-bottom:6px;" , html: `🎮 ${CONFIG.GAME_NAME}`});
+    const sub = el("div", { class:"subtitle", html:"Đăng nhập bằng <b>User AD</b>. Lưu ý: <b>không nhập @vietinbank.vn</b>." });
+
+    const seg = el("div", { class:"seg", style:"margin-top:12px;" }, [
+      el("button", { class:"active", id:"segM", onclick:()=>setAvatar("M") , html:"👨 Nam" }),
+      el("button", { id:"segF", onclick:()=>setAvatar("F"), html:"👩 Nữ" }),
+    ]);
+
+    const userInput = el("input", { placeholder:"User AD (vd: nguyenvana)", autocomplete:"username" });
+    const hint = el("div", { class:"hint", html:"Gợi ý: Không nhập “@vietinbank.vn”" });
+
+    const passInput = el("input", { placeholder:`Password (mặc định: ${CONFIG.DEFAULT_PASS})`, type:"password", autocomplete:"current-password", value: CONFIG.DEFAULT_PASS });
+
+    const btnRow = el("div", { class:"row", style:"margin-top:12px; justify-content:space-between;" }, [
+      el("button", { class:"btn dark", html:"ĐĂNG NHẬP", onclick:()=>doLogin(userInput.value, passInput.value) }),
+      el("button", { class:"btn link small", html:"Admin", onclick:()=>{ view = View.ADMIN_LOGIN; render(); } }),
+    ]);
+
+    panel.append(title, sub, seg, el("div",{style:"height:10px;"}), userInput, hint, el("div",{style:"height:8px;"}), passInput, btnRow);
+    ui.appendChild(panel);
+
+    function setAvatar(a){
+      selectedAvatar = a;
+      panel.querySelector("#segM").classList.toggle("active", a==="M");
+      panel.querySelector("#segF").classList.toggle("active", a==="F");
+    }
+  }
+
+  function doLogin(userAdRaw, passRaw) {
+    const user = normalizeUserAd(userAdRaw);
+    const pass = (passRaw || "").trim();
+
+    if (!user) return showToast("Vui lòng nhập User AD.");
+    const u = state.users[user];
+    if (!u) return showToast("Tài khoản chưa được admin tạo.");
+    if ((u.pass || CONFIG.DEFAULT_PASS) !== pass) return showToast("Password không đúng.");
+
+    state.users[user].avatar = selectedAvatar;
+    ensureUser(user);
+
+    state.session.currentUser = user;
+    state.session.isAdmin = false;
+    saveState();
+
+    view = View.HOME;
+    currentDay = getNextPlayableDay(user);
+    showToast(`Xin chào ${user}! Chúc bạn một ngày đọc hiệu quả ✨`);
+    render();
+  }
+
+  // ✅ CHỈ SỬA Ở ĐÂY: HOME theo luồng trên → dưới (Thông tin → Mục tiêu → Hành trình → Chú thích)
+  function buildHome() {
+    clearUI();
+    const user = currentUser();
+    if (!user) { view = View.LOGIN; return render(); }
+    ensureUser(user);
+
+    const prog = state.progress[user];
+    const pts = prog.points || 0;
+    const rank = userRank(user);
+    const nextDay = getNextPlayableDay(user);
+
+    const corner = el("div", { class:"corner" }, [
+      el("button", { class:"btn soft small", html:"Đăng xuất", onclick:()=>{ state.session.currentUser=null; saveState(); view=View.LOGIN; render(); } }),
+      el("button", { class:"btn link small", html:"Admin", onclick:()=>{ view=View.ADMIN_LOGIN; render(); } }),
+    ]);
+    ui.appendChild(corner);
+
+    const home = el("div", {
+      class:"panel hairline",
+      style:"left:50%; top:50%; transform:translate(-50%,-50%); width:min(920px, 94%); max-height: calc(100% - 64px); overflow:auto;"
+    });
+
+    // 1) Thông tin người chơi + điểm + thứ hạng
+    home.append(
+      el("div", { class:"row", style:"justify-content:space-between; align-items:flex-start;" }, [
+        el("div", { class:"col", style:"gap:6px;" }, [
+          el("div", { class:"title", style:"font-size:16px;", html:`👋 ${user}` }),
+          el("div", { class:"subtitle", html:`Avatar: <b>${state.users[user].avatar==="F" ? "Nữ 👩" : "Nam 👨"}</b>` }),
+        ]),
+        el("div", { class:"badge", html:`⭐ ${pts} điểm` })
+      ])
+    );
+
+    home.append(
+      el("div", { class:"kpi", style:"margin-top:10px;" }, [
+        el("div", { class:"pill", html:`🏅 Thứ hạng: <b>#${rank}</b>` }),
+        el("div", { class:"pill", html:`📅 Ngày hiện tại: <b>${nextDay}/${CONFIG.DAYS}</b>` }),
+        el("div", { class:"pill", html:`✅ Đã hoàn thành: <b>${Object.keys(prog.days).length}/${CONFIG.DAYS}</b>` }),
+      ])
+    );
+
+    home.append(el("div", { class:"divider" }));
+
+    // 2) Mục tiêu
+    home.append(
+      el("div", { class:"subtitle", html:"Mục tiêu: duy trì thói quen đọc mỗi ngày và ghi lại 1 điều tâm đắc để áp dụng vào công việc/cuộc sống." })
+    );
+
+    // 3) Hành trình 21 ngày (grid ngày 1–21)
+    home.append(el("div", { class:"divider" }));
+
+    home.append(
+      el("div", { class:"row", style:"justify-content:space-between; align-items:flex-start;" }, [
+        el("div", { class:"col", style:"gap:4px;" }, [
+          el("div", { class:"title", style:"font-size:16px;", html:"🗺️ Hành trình 21 ngày" }),
+          el("div", { class:"subtitle", html:"Chỉ có <b>Ngày hiện tại</b> được bấm để chia sẻ. Hoàn thành sẽ cộng <b>⭐ 1 điểm</b>." }),
+        ]),
+        el("button", { class:"btn dark small", html:`Vào Ngày ${nextDay}`, onclick:()=>{ currentDay = nextDay; view=View.DAY; render(); } })
+      ])
+    );
+
+    const dayGrid = el("div", { style:"display:grid; grid-template-columns: repeat(7, 1fr); gap:10px; margin-top:12px;" });
+    for (let d=1; d<=CONFIG.DAYS; d++){
+      const st = dayStatus(user,d);
+      const isDone = st === "DONE";
+      const isActive = st === "ACTIVE";
+      const isLocked = st === "LOCKED";
+
+      const btn = el("button", {
+        class: `btn small daybtn ${isActive ? "activePulse" : ""}`,
+        style: `
+          background: ${isDone ? "rgba(255,255,255,.82)" : (isActive ? "rgba(11,18,32,.92)" : "rgba(255,255,255,.45)")};
+          color: ${isDone ? "rgba(11,18,32,.92)" : (isActive ? "#fff" : "rgba(11,18,32,.55)")};
+          opacity:${isLocked ? ".55" : "1"};
+          cursor:${isActive ? "pointer" : "not-allowed"};
+        `,
+        onclick: ()=>{
+          if (!isActive) return showToast("Bạn chỉ có thể thực hiện Ngày hiện tại.");
+          currentDay = d;
+          view = View.DAY;
+          render();
+        }
+      });
+
+      const icon = isDone ? "✅" : (isActive ? "✨" : "⏳");
+      btn.innerHTML = `<span class="mono">Ngày ${d}</span><div style="font-size:16px; margin-top:4px;">${icon}</div>`;
+      dayGrid.appendChild(btn);
+    }
+    home.append(dayGrid);
+
+    // 4) Chú thích trạng thái
+    home.append(
+      el("div", { class:"row", style:"gap:8px; margin-top:10px; flex-wrap:wrap;" }, [
+        el("div", { class:"pill", html:"✅ Đã hoàn thành" }),
+        el("div", { class:"pill", html:"✨ Ngày hiện tại (nhấp nháy)" }),
+        el("div", { class:"pill", html:"⏳ Chưa tới (mờ)" }),
+      ])
+    );
+
+    ui.appendChild(home);
+  }
+
+  function buildDay() {
+    clearUI();
+    const user = currentUser();
+    if (!user) { view = View.LOGIN; return render(); }
+    ensureUser(user);
+
+    const next = getNextPlayableDay(user);
+    if (currentDay !== next) currentDay = next;
+
+    const prog = state.progress[user];
+    if (prog.days[currentDay]) { view = View.HOME; return render(); }
+
+    const corner = el("div", { class:"corner" }, [
+      el("button", { class:"btn soft small", html:"⬅ Trang chủ", onclick:()=>{ view=View.HOME; render(); } }),
+      el("button", { class:"btn soft small", html:"Đăng xuất", onclick:()=>{ state.session.currentUser=null; saveState(); view=View.LOGIN; render(); } }),
+    ]);
+    ui.appendChild(corner);
+
+    const panel = el("div", { class:"panel hairline", style:"left:50%; top:50%; transform:translate(-50%,-50%); width:min(820px, 94%);" });
+    panel.append(
+      el("div", { class:"row", style:"justify-content:space-between; align-items:flex-start;" }, [
+        el("div", { class:"col", style:"gap:4px;" }, [
+          el("div", { class:"title", style:"font-size:18px;", html:`📚 Ngày ${currentDay} – Dare to Read` }),
+          el("div", { class:"subtitle", html:`Anh/Chị hãy chia sẻ điều tâm đắc nhất của buổi đọc sách hôm nay. <b>Mỗi chia sẻ hợp lệ = ⭐ 1 điểm</b>.` })
+        ]),
+        el("div", { class:"badge", html:`⭐ +1 điểm` })
+      ])
+    );
+
+    panel.append(el("div", { class:"divider" }));
+
+    const textarea = el("textarea", {
+      maxlength:String(CONFIG.MAX_SHARE_CHARS),
+      placeholder:"Viết ngắn gọn, rõ ý (gợi ý 2–6 câu):\n• Điều gì khiến bạn tâm đắc?\n• Bạn sẽ áp dụng như thế nào?"
+    });
+
+    const counter = el("div", { class:"hint", style:"text-align:right; margin-top:6px;", html:`0/${CONFIG.MAX_SHARE_CHARS}` });
+    textarea.addEventListener("input", ()=> counter.innerHTML = `${textarea.value.length}/${CONFIG.MAX_SHARE_CHARS}`);
+
+    const btnRow = el("div", { class:"row", style:"margin-top:12px; justify-content:flex-end;" }, [
+      el("button", { class:"btn dark", html:"KẾT THÚC NGÀY HÔM NAY", onclick:()=>finishDay(textarea.value) })
+    ]);
+
+    panel.append(textarea, counter, btnRow);
+    ui.appendChild(panel);
+  }
+
+  async function finishDay(contentRaw) {
+    const user = currentUser();
+    if (!user) return;
+
+    const content = (contentRaw || "").trim();
+    if (content.length < 10) return showToast("Nội dung hơi ngắn. Vui lòng chia sẻ ít nhất ~10 ký tự.");
+    if (content.length > CONFIG.MAX_SHARE_CHARS) return showToast("Nội dung vượt giới hạn ký tự.");
+
+    const prog = state.progress[user];
+    const day = currentDay;
+    if (prog.days[day]) return showToast("Ngày này đã hoàn thành.");
+
+    const completedAt = now();
+
+    // Save progress locally
+    prog.days[day] = { content, completedAt, point: 1 };
+    prog.points = (prog.points || 0) + 1;
+
+    const pts = prog.points;
+    if (!prog.reachedAt) prog.reachedAt = {};
+    if (!prog.reachedAt[String(pts)] || completedAt < prog.reachedAt[String(pts)]) prog.reachedAt[String(pts)] = completedAt;
+
+    // Save a quote for the "Done" card
+    state.lastQuote = pickQuote();
+    saveState();
+
+    // Send to Google Sheet (hidden UI)
+    const payload = {
+      user,
+      day,
+      content,
+      point: 1,
+      totalPointAfter: prog.points,
+      completedAtISO: new Date(completedAt).toISOString()
+    };
+
+    const sent = await sendToWebhook(payload);
+    if (sent.ok) setSyncStatus(user, day, true);
+    else setSyncStatus(user, day, false);
+
+    lastDoneInfo = { day, pointsGained: 1 };
+    view = View.DONE;
+    render();
+  }
+
+  function buildDone() {
+    clearUI();
+    const user = currentUser();
+    if (!user) { view = View.LOGIN; return render(); }
+    ensureUser(user);
+
+    const info = lastDoneInfo || { day: currentDay, pointsGained: 1 };
+    const quote = state.lastQuote || pickQuote();
+
+    const panel = el("div", { class:"panel hairline", style:"left:50%; top:50%; transform:translate(-50%,-50%); width:min(680px, 92%); text-align:center;" });
+
+    panel.append(
+      el("div", { class:"title", style:"font-size:20px;", html:`🎉 Hoàn thành Ngày ${info.day}!` }),
+      el("div", { class:"subtitle", style:"margin-top:6px;", html:`Bạn vừa ghi lại điều tâm đắc của hôm nay.` }),
+      el("div", { class:"kpi", style:"justify-content:center; margin-top:10px;" }, [
+        el("div", { class:"pill", html:`⭐ Điểm hôm nay: <b>+${info.pointsGained}</b>` }),
+        el("div", { class:"pill", html:`📅 Tiếp theo: <b>Ngày ${Math.min(info.day+1, CONFIG.DAYS)}</b>` }),
+      ]),
+      el("div", { class:"divider" }),
+      el("div", { class:"quoteCard" }, [
+        el("div", { class:"subtitle", style:"margin-bottom:6px;", html:"💬 Thẻ truyền cảm hứng về đọc sách" }),
+        el("div", { class:"quoteText", html:`“${escapeHtml(quote.text)}”` }),
+        el("div", { class:"quoteAuthor", html:`— ${escapeHtml(quote.author)}` }),
+      ]),
+      el("div", { class:"row", style:"justify-content:center; margin-top:12px;" }, [
+        el("button", { class:"btn dark", html:"Quay về Trang chủ", onclick:()=>{ view=View.HOME; render(); } }),
+        el("button", { class:"btn soft", html:"Đổi thẻ câu nói", onclick:()=>{ state.lastQuote = pickQuote(); saveState(); render(); } }),
+      ])
+    );
+
+    ui.appendChild(panel);
+  }
+
+  function escapeHtml(s){
+    return String(s ?? "")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#039;");
+  }
+
+  function buildAdminLogin() {
+    clearUI();
+
+    const panel = el("div", { class:"panel hairline", style:"left:50%; top:50%; transform:translate(-50%,-50%); width:min(520px, 92%);" });
+
+    const title = el("div", { class:"title", style:"font-size:18px; margin-bottom:6px;", html:"🔧 Admin – Thiết lập Game" });
+    const sub = el("div", { class:"subtitle", html:`Nhập mật khẩu admin để vào thiết lập. (Mật khẩu: <span class="mono">${CONFIG.ADMIN_PASS}</span>)` });
+
+    const pass = el("input", { type:"password", placeholder:"Nhập mật khẩu admin" });
+
+    const row = el("div", { class:"row", style:"margin-top:12px; justify-content:space-between;" }, [
+      el("button", { class:"btn soft", html:"⬅ Quay lại", onclick:()=>{
+        view = isLoggedIn() ? View.HOME : View.LOGIN;
+        render();
+      }}),
+      el("button", { class:"btn dark", html:"VÀO THIẾT LẬP", onclick:()=>{
+        if ((pass.value||"").trim() !== CONFIG.ADMIN_PASS) return showToast("Sai mật khẩu admin.");
+        state.session.isAdmin = true;
+        saveState();
+        view = View.ADMIN;
+        adminTab = "ACCOUNTS";
+        render();
+      }}),
+    ]);
+
+    panel.append(title, sub, el("div",{style:"height:10px;"}), pass, row);
+    ui.appendChild(panel);
+  }
+
+  function buildAdmin() {
+    clearUI();
+    state.session.isAdmin = true;
+
+    const corner = el("div", { class:"corner" }, [
+      el("button", { class:"btn soft small", html:"⬅ Quay lại", onclick:()=>{
+        view = isLoggedIn() ? View.HOME : View.LOGIN;
+        render();
+      }}),
+    ]);
+    ui.appendChild(corner);
+
+    const shell = el("div", { class:"panel hairline", style:"left:18px; top:18px; width: calc(100% - 36px); height: calc(100% - 36px); overflow:auto;" });
+
+    shell.append(
+      el("div", { class:"row", style:"justify-content:space-between; align-items:flex-start;" }, [
+        el("div", { class:"col", style:"gap:4px;" }, [
+          el("div", { class:"title", style:"font-size:18px;", html:"🔧 Admin Console – Dare to Read" }),
+          el("div", { class:"subtitle", html:"Quản lý tài khoản, cấu hình Web App (ghi Sheet), dashboard, reset." })
+        ]),
+        el("div", { class:"row", style:"gap:8px;" }, [
+          el("button", { class:`btn small ${adminTab==="ACCOUNTS"?"dark":"soft"}`, html:"👥 Tài khoản", onclick:()=>{adminTab="ACCOUNTS"; render();} }),
+          el("button", { class:`btn small ${adminTab==="WEBHOOK"?"dark":"soft"}`, html:"🧾 Web App / Sheet", onclick:()=>{adminTab="WEBHOOK"; render();} }),
+          el("button", { class:`btn small ${adminTab==="DASH"?"dark":"soft"}`, html:"📊 Dashboard", onclick:()=>{adminTab="DASH"; render();} }),
+          el("button", { class:`btn small ${adminTab==="RESET"?"warn":"soft"}`, html:"♻ Reset", onclick:()=>{adminTab="RESET"; render();} }),
+        ])
+      ])
+    );
+
+    shell.append(el("div", { class:"divider" }));
+
+    if (adminTab === "ACCOUNTS") shell.append(adminAccountsPanel());
+    if (adminTab === "WEBHOOK") shell.append(adminWebhookPanel());
+    if (adminTab === "DASH") shell.append(adminDashPanel());
+    if (adminTab === "RESET") shell.append(adminResetPanel());
+
+    ui.appendChild(shell);
+  }
+
+  function normalizePanels(root){
+    for (const p of root.querySelectorAll(".panel")) {
+      p.style.position = "relative";
+      p.style.left = "auto"; p.style.top = "auto"; p.style.right = "auto";
+      p.style.transform = "none";
+      p.style.boxShadow = "none";
+      p.style.background = "rgba(255,255,255,.70)";
+      p.style.backdropFilter = "blur(8px)";
+      p.style.borderRadius = "18px";
+    }
+  }
+
+  // ---------- ADMIN PANELS ----------
+  function adminAccountsPanel() {
+    const wrap = el("div", { class:"col", style:"gap:12px;" });
+
+    const card = el("div", { class:"panel hairline", style:"position:relative; padding:14px;" });
+    card.append(el("div",{class:"title", html:"Tạo tài khoản người chơi"}));
+
+    const user = el("input", { placeholder:"User AD (không @vietinbank.vn)" });
+    const pass = el("input", { placeholder:`Password (mặc định ${CONFIG.DEFAULT_PASS})`, value: CONFIG.DEFAULT_PASS });
+    const avatar = el("select", {}, [
+      el("option", { value:"M", html:"Nam 👨" }),
+      el("option", { value:"F", html:"Nữ 👩" }),
+    ]);
+
+    const btn = el("button", { class:"btn dark", html:"Tạo / Cập nhật", onclick:()=>{
+      const u = normalizeUserAd(user.value);
+      if (!u) return showToast("Thiếu User AD.");
+      const p = (pass.value || CONFIG.DEFAULT_PASS).trim() || CONFIG.DEFAULT_PASS;
+      const a = (String(avatar.value||"M").trim().toUpperCase()==="F") ? "F" : "M";
+
+      state.users[u] = { pass: p, avatar: a, createdAt: state.users[u]?.createdAt || now() };
+      ensureUser(u);
+      saveState();
+      showToast(`Đã tạo/cập nhật user: ${u}`);
+      render();
+    }});
+
+    card.append(el("div",{style:"height:8px;"}), user,
+                el("div",{style:"height:8px;"}), pass,
+                el("div",{style:"height:8px;"}), avatar,
+                el("div",{style:"height:10px;"}), btn);
+
+    const card2 = el("div", { class:"panel hairline", style:"position:relative; padding:14px;" });
+    card2.append(el("div",{class:"title", html:"Import/Export Excel (CSV)"}));
+    card2.append(el("div",{class:"subtitle", html:"Import theo mẫu: <span class='mono'>user,password,avatar</span> (avatar = M hoặc F)."}));
+
+    const downTpl = el("button", { class:"btn soft", html:"⬇ Tải mẫu Excel (CSV)", onclick:downloadTemplateCSV });
+    const file = el("input", { type:"file", accept:".csv,text/csv", class:"fileinput" });
+    const importBtn = el("button", { class:"btn dark", html:"⬆ Import CSV", onclick:()=>importCSV(file.files?.[0]) });
+
+    card2.append(el("div",{style:"height:10px;"}), el("div",{class:"row"}, [downTpl, importBtn]), el("div",{style:"height:8px;"}), file);
+
+    const card3 = el("div", { class:"panel hairline", style:"position:relative; padding:14px;" });
+    card3.append(el("div",{class:"title", html:"Danh sách tài khoản"}));
+
+    const table = el("table", { class:"table", style:"width:100%; border-collapse:separate; border-spacing:0; overflow:hidden; border-radius:14px; border:1px solid rgba(11,18,32,.10); background:rgba(255,255,255,.75);" });
+    table.append(
+      el("thead", {}, [ el("tr", {}, [
+        el("th",{html:"User", style:"text-align:left; font-size:12px; padding:8px 10px; background:rgba(255,255,255,.65); font-weight:900; border-bottom:1px solid rgba(11,18,32,.08);"}),
+        el("th",{html:"Avatar", style:"text-align:left; font-size:12px; padding:8px 10px; background:rgba(255,255,255,.65); font-weight:900; border-bottom:1px solid rgba(11,18,32,.08);"}),
+        el("th",{html:"Điểm", style:"text-align:left; font-size:12px; padding:8px 10px; background:rgba(255,255,255,.65); font-weight:900; border-bottom:1px solid rgba(11,18,32,.08);"}),
+        el("th",{html:"Hoàn thành", style:"text-align:left; font-size:12px; padding:8px 10px; background:rgba(255,255,255,.65); font-weight:900; border-bottom:1px solid rgba(11,18,32,.08);"}),
+        el("th",{html:"Hành động", style:"text-align:left; font-size:12px; padding:8px 10px; background:rgba(255,255,255,.65); font-weight:900; border-bottom:1px solid rgba(11,18,32,.08);"}),
+      ])])
+    );
+
+    const tbody = el("tbody");
+    const usersSorted = Object.keys(state.users).sort((a,b)=>a.localeCompare(b));
+    for (const u of usersSorted) {
+      ensureUser(u);
+      const p = state.progress[u];
+      const doneCount = Object.keys(p.days).length;
+
+      const tr = el("tr", {}, [
+        el("td",{html:`<span class="mono">${u}</span>`, style:"font-size:12px; padding:8px 10px; border-bottom:1px solid rgba(11,18,32,.08);"}),
+        el("td",{html: state.users[u].avatar==="F" ? "Nữ 👩" : "Nam 👨", style:"font-size:12px; padding:8px 10px; border-bottom:1px solid rgba(11,18,32,.08);"}),
+        el("td",{html:`⭐ ${p.points||0}`, style:"font-size:12px; padding:8px 10px; border-bottom:1px solid rgba(11,18,32,.08);"}),
+        el("td",{html:`📅 ${doneCount}/${CONFIG.DAYS}`, style:"font-size:12px; padding:8px 10px; border-bottom:1px solid rgba(11,18,32,.08);"}),
+        el("td",{style:"font-size:12px; padding:8px 10px; border-bottom:1px solid rgba(11,18,32,.08);"},[
+          el("button",{class:"btn small soft", html:"Reset user", onclick:()=>{
+            state.progress[u] = makeFreshProgress(state.users[u]?.createdAt || now());
+            Object.keys(state.sync.status).forEach(k=>{ if (k.startsWith(u+":")) delete state.sync.status[k]; });
+            saveState();
+            showToast(`Đã reset user: ${u}`);
+            render();
+          }}),
+          el("span",{html:" "}),
+          el("button",{class:"btn small warn", html:"Xóa", onclick:()=>{
+            if (!confirm(`Xóa user ${u}? (Không thể khôi phục)`)) return;
+            delete state.users[u];
+            delete state.progress[u];
+            Object.keys(state.sync.status).forEach(k=>{ if (k.startsWith(u+":")) delete state.sync.status[k]; });
+            if (state.session.currentUser === u) state.session.currentUser = null;
+            saveState();
+            showToast(`Đã xóa user: ${u}`);
+            render();
+          }})
+        ])
+      ]);
+      tbody.appendChild(tr);
+    }
+    table.append(tbody);
+    card3.append(el("div",{style:"height:10px;"}), table);
+
+    wrap.append(card, card2, card3);
+    normalizePanels(wrap);
+    return wrap;
+  }
+
+  function adminWebhookPanel() {
+    const wrap = el("div", { class:"col", style:"gap:12px;" });
+
+    const card = el("div", { class:"panel hairline", style:"position:relative; padding:14px;" });
+    card.append(el("div",{class:"title", html:"Cấu hình Web App (ghi dữ liệu lên Google Sheet)"}));
+    card.append(el("div",{class:"subtitle", html:"Dán đúng <b>Apps Script Web App URL</b> (dạng <span class='mono'>https://script.google.com/macros/s/.../exec</span>). Khi người chơi bấm <b>KẾT THÚC</b>, game sẽ POST dữ liệu lên Sheet. (Người chơi không thấy trạng thái Sheet)"}));
+
+    const link = el("input", { placeholder:"Dán Web App URL...", value: getWebhookUrl() });
+    const saveBtn = el("button", { class:"btn dark", html:"Lưu Web App URL", onclick:()=>{
+      state.settings.webhookUrl = (link.value || "").trim();
+      saveState();
+      showToast("Đã lưu Web App URL.");
+      render();
+    }});
+
+    const openBtn = el("button", { class:"btn soft", html:"Mở Web App", onclick:()=>{
+      const l = (link.value || "").trim();
+      if (!l) return showToast("Chưa có Web App URL.");
+      window.open(l, "_blank");
+    }});
+
+    const testBtn = el("button", { class:"btn dark", html:"Test gửi dữ liệu", onclick: async ()=>{
+      const l = (link.value || "").trim();
+      if (!l) return showToast("Chưa có Web App URL.");
+      state.settings.webhookUrl = l; saveState();
+
+      const payload = {
+        user: "ADMIN_TEST",
+        day: 0,
+        content: "Test webhook từ admin panel",
+        point: 0,
+        totalPointAfter: 0,
+        completedAtISO: new Date().toISOString()
+      };
+      const sent = await sendToWebhook(payload);
+      if (sent.ok) showToast("✅ Đã gửi test (hãy kiểm tra Sheet tab Data).");
+      else showToast("❌ Test thất bại. Kiểm tra quyền Deploy Web App.");
+      render();
+    }});
+
+    const exportBtn = el("button", { class:"btn soft", html:"Export CSV dự phòng", onclick: exportResultsCSV });
+
+    card.append(el("div",{style:"height:10px;"}), link,
+                el("div",{style:"height:10px;"}), el("div",{class:"row"}, [saveBtn, openBtn, testBtn, exportBtn]));
+
+    card.append(el("div",{class:"subtitle", style:"margin-top:10px;", html:"Cột dữ liệu gửi lên Sheet: timestamp, user, day, content, point, totalPointAfter, completedAtISO"}));
+
+    wrap.append(card);
+    normalizePanels(wrap);
+    return wrap;
+  }
+
+  function adminDashPanel() {
+    const wrap = el("div", { class:"col", style:"gap:12px;" });
+    const card = el("div", { class:"panel hairline", style:"position:relative; padding:14px;" });
+
+    card.append(el("div",{class:"title", html:"Dashboard"}));
+    card.append(el("div",{class:"subtitle", html:"Thứ hạng theo điểm & thời gian đạt điểm."}));
+
+    const lb = computeLeaderboard();
+
+    const table = el("table", { class:"table", style:"width:100%; border-collapse:separate; border-spacing:0; overflow:hidden; border-radius:14px; border:1px solid rgba(11,18,32,.10); background:rgba(255,255,255,.75); margin-top:10px;" });
+    table.append(
+      el("thead", {}, [ el("tr", {}, [
+        el("th",{html:"#", style:"text-align:left; font-size:12px; padding:8px 10px; background:rgba(255,255,255,.65); font-weight:900; border-bottom:1px solid rgba(11,18,32,.08);"}),
+        el("th",{html:"User", style:"text-align:left; font-size:12px; padding:8px 10px; background:rgba(255,255,255,.65); font-weight:900; border-bottom:1px solid rgba(11,18,32,.08);"}),
+        el("th",{html:"Điểm", style:"text-align:left; font-size:12px; padding:8px 10px; background:rgba(255,255,255,.65); font-weight:900; border-bottom:1px solid rgba(11,18,32,.08);"}),
+        el("th",{html:"Mốc điểm đạt lúc", style:"text-align:left; font-size:12px; padding:8px 10px; background:rgba(255,255,255,.65); font-weight:900; border-bottom:1px solid rgba(11,18,32,.08);"}),
+      ])])
+    );
+
+    const tbody = el("tbody");
+    lb.slice(0, 50).forEach((r, i)=>{
+      const dt = new Date(r.reachedAt);
+      tbody.appendChild(el("tr", {}, [
+        el("td",{html:`<b>${i+1}</b>`, style:"font-size:12px; padding:8px 10px; border-bottom:1px solid rgba(11,18,32,.08);"}),
+        el("td",{html:`<span class="mono">${r.user}</span>`, style:"font-size:12px; padding:8px 10px; border-bottom:1px solid rgba(11,18,32,.08);"}),
+        el("td",{html:`⭐ ${r.points}`, style:"font-size:12px; padding:8px 10px; border-bottom:1px solid rgba(11,18,32,.08);"}),
+        el("td",{html:`${dt.toLocaleString("vi-VN")}`, style:"font-size:12px; padding:8px 10px; border-bottom:1px solid rgba(11,18,32,.08);"}),
+      ]));
+    });
+    table.append(tbody);
+    card.append(table);
+
+    wrap.append(card);
+    normalizePanels(wrap);
+    return wrap;
+  }
+
+  function adminResetPanel() {
+    const wrap = el("div", { class:"col", style:"gap:12px;" });
+    const card = el("div", { class:"panel hairline", style:"position:relative; padding:14px;" });
+
+    card.append(el("div",{class:"title", html:"Reset toàn bộ game"}));
+    card.append(el("div",{class:"subtitle", html:`Nhập mật khẩu <span class="mono">${CONFIG.ADMIN_PASS}</span> để reset tiến độ/điểm của <b>tất cả</b> người chơi.`}));
+
+    const pass = el("input", { type:"password", placeholder:"Nhập mật khẩu reset" });
+    const btn = el("button", { class:"btn warn", html:"RESET TOÀN BỘ", onclick:()=>{
+      if ((pass.value||"").trim() !== CONFIG.ADMIN_PASS) return showToast("Sai mật khẩu reset.");
+      if (!confirm("Bạn chắc chắn reset toàn bộ tiến độ & điểm của tất cả người chơi?")) return;
+
+      for (const u of Object.keys(state.users)) state.progress[u] = makeFreshProgress(state.users[u]?.createdAt || now());
+      state.sync.status = {};
+      state.settings.lastExportAt = 0;
+      state.lastQuote = null;
+      saveState();
+      showToast("Đã reset toàn bộ game. Tất cả người chơi bắt đầu lại từ Ngày 1.");
+      render();
+    }});
+
+    card.append(el("div",{style:"height:10px;"}), pass, el("div",{style:"height:10px;"}), btn);
+    wrap.append(card);
+    normalizePanels(wrap);
+    return wrap;
+  }
+
+  // ---------- CSV IMPORT/EXPORT ----------
+  function downloadTemplateCSV() {
+    const lines = [
+      "user,password,avatar",
+      `example01,${CONFIG.DEFAULT_PASS},M`,
+      `example02,${CONFIG.DEFAULT_PASS},F`,
+    ];
+    downloadText("dare_to_read_accounts_template.csv", lines.join("\n"));
+  }
+
+  function importCSV(file) {
+    if (!file) return showToast("Vui lòng chọn file CSV.");
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = String(reader.result || "");
+      const rows = parseCSV(text);
+      if (!rows.length) return showToast("CSV rỗng hoặc không đọc được.");
+
+      let imported = 0;
+      for (let i=0;i<rows.length;i++){
+        const r = rows[i];
+        if (i===0 && r[0]?.toLowerCase().includes("user")) continue;
+        const u = normalizeUserAd(r[0]||"");
+        if (!u) continue;
+        const p = (r[1] || CONFIG.DEFAULT_PASS).trim() || CONFIG.DEFAULT_PASS;
+        const a = (String(r[2]||"M").trim().toUpperCase()==="F") ? "F" : "M";
+
+        state.users[u] = { pass: p, avatar: a, createdAt: state.users[u]?.createdAt || now() };
+        ensureUser(u);
+        imported++;
+      }
+      saveState();
+      showToast(`Đã import ${imported} tài khoản.`);
+      render();
+    };
+    reader.readAsText(file, "utf-8");
+  }
+
+  function exportResultsCSV() {
+    const rows = [];
+    rows.push(["user","day","content","completedAtISO","point","totalPointAfter"].join(","));
+
+    for (const u of Object.keys(state.users)) {
+      ensureUser(u);
+      const prog = state.progress[u];
+      let running = 0;
+      for (let d=1; d<=CONFIG.DAYS; d++){
+        const rec = prog.days[d];
+        if (!rec) continue;
+        running += rec.point || 1;
+        const iso = new Date(rec.completedAt).toISOString();
+        rows.push([
+          csvCell(u),
+          d,
+          csvCell(rec.content),
+          iso,
+          (rec.point||1),
+          running
+        ].join(","));
+      }
+    }
+    state.settings.lastExportAt = now();
+    saveState();
+    downloadText("dare_to_read_results.csv", rows.join("\n"));
+    showToast("Đã export CSV kết quả.");
+  }
+
+  function csvCell(s){
+    const t = String(s ?? "");
+    if (/[,"\n]/.test(t)) return `"${t.replace(/"/g,'""')}"`;
+    return t;
+  }
+
+  function downloadText(filename, text) {
+    const blob = new Blob([text], {type:"text/csv;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function parseCSV(text) {
+    const out = [];
+    let row = [], cur = "", inQ = false;
+    for (let i=0;i<text.length;i++){
+      const ch = text[i];
+      const next = text[i+1];
+
+      if (inQ) {
+        if (ch === '"' && next === '"') { cur += '"'; i++; continue; }
+        if (ch === '"') { inQ = false; continue; }
+        cur += ch;
+      } else {
+        if (ch === '"') { inQ = true; continue; }
+        if (ch === ',') { row.push(cur); cur=""; continue; }
+        if (ch === '\r') continue;
+        if (ch === '\n') { row.push(cur); out.push(row); row=[]; cur=""; continue; }
+        cur += ch;
+      }
+    }
+    if (cur.length || row.length) { row.push(cur); out.push(row); }
+    return out.filter(r => r.some(c => String(c).trim().length));
+  }
+
+  // ---------- ROUTER ----------
+  function render() {
+    if (view === View.LOGIN) buildLogin();
+    else if (view === View.HOME) buildHome();
+    else if (view === View.DAY) buildDay();
+    else if (view === View.DONE) buildDone();
+    else if (view === View.ADMIN_LOGIN) buildAdminLogin();
+    else if (view === View.ADMIN) buildAdmin();
+  }
+
+  // ---------- INIT ----------
+  if (state.session.currentUser && state.users[state.session.currentUser]) {
+    view = View.HOME;
+    currentDay = getNextPlayableDay(state.session.currentUser);
+  } else {
+    view = View.LOGIN;
+  }
+  if (!state.settings.webhookUrl) { state.settings.webhookUrl = CONFIG.WEBHOOK_URL; saveState(); }
+
+  render();
+})();
+</script>
+</body>
+</html>
